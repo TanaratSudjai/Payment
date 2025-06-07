@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { swagger } from '@elysiajs/swagger';
 import { UserController } from "./controllers/user.controller";
 import { PostController } from "./controllers/post.controller";
 
@@ -6,6 +7,14 @@ const userController = new UserController();
 const postController = new PostController();
 
 const app = new Elysia()
+  .use(swagger({
+    documentation: {
+      info: {
+        title: 'Elysia API Documentation',
+        version: '1.0.0'
+      }
+    }
+  }))
   .onError(({ code, error }) => {
     return {
       success: false,
