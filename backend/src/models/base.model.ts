@@ -1,6 +1,13 @@
 import { Elysia } from "elysia";
 import { PrismaClient } from "@prisma/client";
-import { BaseController, ApiResponse } from "./base.controller";
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  details?: any;
+  timestamp: string;
+}
 
 export interface BaseModel {
   id: number;
@@ -8,7 +15,36 @@ export interface BaseModel {
   updatedAt?: Date;
 }
 
-export class BaseCrudController<T extends BaseModel> extends BaseController {
+export class BaseController {
+  protected app: Elysia;
+
+  constructor() {
+    this.app = new Elysia();
+  }
+
+  public getRoutes(): Elysia {
+    return this.app;
+  }
+
+  protected successResponse<T>(data: T): ApiResponse<T> {
+    return {
+      success: true,
+      data,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  protected errorResponse(message: string, details?: any): ApiResponse {
+    return {
+      success: false,
+      error: message,
+      details,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+
+export class Model<T extends BaseModel> extends BaseController {
   protected prisma: PrismaClient;
   protected model: any;
 

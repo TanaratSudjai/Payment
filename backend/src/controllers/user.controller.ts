@@ -1,4 +1,4 @@
-import { BaseCrudController, BaseModel } from "./base-crud.controller";
+import { Model, BaseModel } from "../models/base.model";
 import prisma from "../lib/prisma";
 
 interface User extends BaseModel {
@@ -6,7 +6,7 @@ interface User extends BaseModel {
   name?: string;
 }
 
-export class UserController extends BaseCrudController<User> {
+export class UserController extends Model<User> {
   constructor() {
     super(prisma, prisma.user);
   }

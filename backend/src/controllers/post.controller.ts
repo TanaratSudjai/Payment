@@ -1,4 +1,4 @@
-import { BaseCrudController, BaseModel } from "./base-crud.controller";
+import { Model, BaseModel } from "../models/base.model";
 import prisma from "../lib/prisma";
 
 interface Post extends BaseModel {
@@ -7,7 +7,7 @@ interface Post extends BaseModel {
   published: boolean;
 }
 
-export class PostController extends BaseCrudController<Post> {
+export class PostController extends Model<Post> {
   constructor() {
     super(prisma, prisma.post);
   }
