@@ -1,14 +1,8 @@
-import { Model, BaseModel } from "../models/base.model";
-import prisma from "../lib/prisma";
+import { BaseController } from "../models/base.model";
+import { PostService } from "../services/post.service";
 
-interface Post extends BaseModel {
-  title: string;
-  content?: string;
-  published: boolean;
-}
-
-export class PostController extends Model<Post> {
+export class PostController extends BaseController {
   constructor() {
-    super(prisma, prisma.post);
+    super(new PostService());
   }
 } 

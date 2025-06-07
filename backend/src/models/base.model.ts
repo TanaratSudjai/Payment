@@ -15,11 +15,53 @@ export interface BaseModel {
   updatedAt?: Date;
 }
 
+export class BaseService<T extends BaseModel> {
+  protected prisma: PrismaClient;
+  protected model: any;
+
+  constructor(prisma: PrismaClient, model: any) {
+    this.prisma = prisma;
+    this.model = model;
+  }
+
+  async findAll(): Promise<T[]> {
+    return this.model.findMany();
+  }
+
+  async findById(id: number): Promise<T | null> {
+    return this.model.findUnique({
+      where: { id }
+    });
+  }
+
+  async create(data: Partial<T>): Promise<T> {
+    return this.model.create({
+      data
+    });
+  }
+
+  async update(id: number, data: Partial<T>): Promise<T> {
+    return this.model.update({
+      where: { id },
+      data
+    });
+  }
+
+  async delete(id: number): Promise<T> {
+    return this.model.delete({
+      where: { id }
+    });
+  }
+}
+
 export class BaseController {
   protected app: Elysia;
+  protected service: BaseService<any>;
 
-  constructor() {
+  constructor(service: BaseService<any>) {
     this.app = new Elysia();
+    this.service = service;
+    this.initializeRoutes();
   }
 
   public getRoutes(): Elysia {
@@ -42,24 +84,12 @@ export class BaseController {
       timestamp: new Date().toISOString()
     };
   }
-}
-
-export class Model<T extends BaseModel> extends BaseController {
-  protected prisma: PrismaClient;
-  protected model: any;
-
-  constructor(prisma: PrismaClient, model: any) {
-    super();
-    this.prisma = prisma;
-    this.model = model;
-    this.initializeRoutes();
-  }
 
   protected initializeRoutes(): void {
     this.app
       .get("/", async () => {
         try {
-          const records = await this.model.findMany();
+          const records = await this.service.findAll();
           return this.successResponse(records);
         } catch (error) {
           return this.errorResponse("Failed to fetch records", error);
@@ -67,9 +97,7 @@ export class Model<T extends BaseModel> extends BaseController {
       })
       .get("/:id", async ({ params: { id } }) => {
         try {
-          const record = await this.model.findUnique({
-            where: { id: Number(id) }
-          });
+          const record = await this.service.findById(Number(id));
           if (!record) {
             return this.errorResponse("Record not found");
           }
@@ -80,9 +108,7 @@ export class Model<T extends BaseModel> extends BaseController {
       })
       .post("/", async ({ body }) => {
         try {
-          const record = await this.model.create({
-            data: body
-          });
+          const record = await this.service.create(body as any);
           return this.successResponse(record);
         } catch (error) {
           return this.errorResponse("Failed to create record", error);
@@ -90,10 +116,7 @@ export class Model<T extends BaseModel> extends BaseController {
       })
       .put("/:id", async ({ params: { id }, body }) => {
         try {
-          const record = await this.model.update({
-            where: { id: Number(id) },
-            data: body
-          });
+          const record = await this.service.update(Number(id), body as any);
           return this.successResponse(record);
         } catch (error) {
           return this.errorResponse("Failed to update record", error);
@@ -101,9 +124,7 @@ export class Model<T extends BaseModel> extends BaseController {
       })
       .delete("/:id", async ({ params: { id } }) => {
         try {
-          const record = await this.model.delete({
-            where: { id: Number(id) }
-          });
+          const record = await this.service.delete(Number(id));
           return this.successResponse(record);
         } catch (error) {
           return this.errorResponse("Failed to delete record", error);

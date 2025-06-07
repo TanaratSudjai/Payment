@@ -1,13 +1,8 @@
-import { Model, BaseModel } from "../models/base.model";
-import prisma from "../lib/prisma";
+import { BaseController } from "../models/base.model";
+import { UserService } from "../services/user.service";
 
-interface User extends BaseModel {
-  email: string;
-  name?: string;
-}
-
-export class UserController extends Model<User> {
+export class UserController extends BaseController {
   constructor() {
-    super(prisma, prisma.user);
+    super(new UserService());
   }
 } 
